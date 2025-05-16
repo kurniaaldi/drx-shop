@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
@@ -10,22 +11,19 @@ import { ProductModuleProps } from "@/app/page";
 import useParamsHook from "@/hooks/useParams";
 
 export default function ListProduct({ props }: { props: ProductModuleProps }) {
-  const { setParams } = useParamsHook();
+  const { setParams, params } = useParamsHook();
 
   const [products, setProducts] = useState<any[]>([]);
-  const [page, setPage] = useState<number>(props?.defaultPage ?? 1);
-  const [filters, setFilters] = useState<any>({
-    categoryId: props?.defaultCategoryId,
-    minPrice: props?.defaultMinPrice,
-    maxPrice: props?.defaultMaxPrice,
-  });
+  const [filters, setFilters] = useState<any>({});
   const [loading, setLoading] = useState<boolean>(false);
+  console.log(products);
 
   const fetchProducts = async () => {
     setLoading(true);
+
     const parameter = new URLSearchParams({
-      offset: ((page - 1) * 12).toString(),
-      limit: "12",
+      offset: "1",
+      limit: ((filters.page || 1) * 12).toString(),
     });
 
     if (filters.categoryId) parameter.append("categoryId", filters.categoryId);
@@ -33,21 +31,25 @@ export default function ListProduct({ props }: { props: ProductModuleProps }) {
     if (filters.maxPrice) parameter.append("price_max", filters.maxPrice);
 
     const res = await api.get(`/products?${parameter.toString()}`);
-    setProducts(page === 1 ? res.data : (prev) => [...prev, ...res.data]);
+    setProducts(res.data);
     setLoading(false);
   };
 
   useEffect(() => {
-    setPage(1);
     fetchProducts();
   }, [filters]);
 
   useEffect(() => {
-    fetchProducts();
-  }, [page]);
+    setFilters({
+      page: params?.page || props?.defaultPage,
+      categoryId: params?.categoryId || props?.defaultCategoryId,
+      minPrice: params?.minPrice || props?.defaultMinPrice,
+      maxPrice: params?.maxPrice || props?.defaultMaxPrice,
+    });
+  }, []);
 
   return (
-    <div className="p-4">
+    <div className="p-4 bg-white dark:bg-gray-900 min-h-screen text-black dark:text-white transition-colors duration-300">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 w-full">
         <ProductFilter
           onFilterChange={(e) => {
@@ -55,7 +57,7 @@ export default function ListProduct({ props }: { props: ProductModuleProps }) {
             setParams("minPrice", e.minPrice ? e.minPrice : 0);
             setParams("maxPrice", e.maxPrice ? e.maxPrice : 0);
             setParams("page", 1);
-            setFilters(e);
+            setFilters({ ...e, page: 1 });
           }}
         />
         <div className="col-span-3">
@@ -63,34 +65,40 @@ export default function ListProduct({ props }: { props: ProductModuleProps }) {
           {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-pulse">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-gray-300 h-40 rounded w-full"></div>
+                <div
+                  key={i}
+                  className="bg-gray-300 dark:bg-gray-700 h-40 rounded w-full"
+                ></div>
               ))}
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full h-full">
-              {products.map((prod) => (
-                <Link key={prod.id} href={`/product/${prod.id}`}>
-                  <div className="border rounded p-2 hover:shadow w-full h-full">
+              {products.map((prod, index) => (
+                <Link key={index} href={`/product/${prod.id}`}>
+                  <div className="border dark:border-gray-700 rounded p-2 hover:shadow w-full h-full bg-white dark:bg-gray-800 transition-colors">
                     <img
                       src={prod.images[0]}
-                      className="w-full h-40 object-cover"
+                      className="w-full h-40 object-cover rounded"
+                      alt={prod.title}
                     />
                     <p>{prod.title}</p>
-                    <p className="text-sm text-gray-500">${prod.price}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-300">
+                      ${prod.price}
+                    </p>
                   </div>
                 </Link>
               ))}
+              <button
+                onClick={() => {
+                  setParams("page", `${filters.page + 1}`);
+                  setFilters({ ...filters, page: filters.page + 1 });
+                }}
+                className="mt-4 px-4 py-2 col-span-2 md:col-span-4 bg-blue-600 hover:bg-blue-700 text-white rounded w-full"
+              >
+                Load More
+              </button>
             </div>
           )}
-          <button
-            onClick={() => {
-              setParams("page", `${page + 1}`);
-              setPage((p) => p + 1);
-            }}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded w-full"
-          >
-            Load More
-          </button>
         </div>
       </div>
     </div>

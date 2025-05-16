@@ -9,14 +9,19 @@ import { api } from "@/utils/api";
 import ProductFilter from "@/components/filter";
 import { ProductModuleProps } from "@/app/page";
 import useParamsHook from "@/hooks/useParams";
+import useDebounce from "@/hooks/useDebounce";
 
 export default function ListProduct({ props }: { props: ProductModuleProps }) {
-  const { setParams, params } = useParamsHook();
+  const { setParams, params, removeParams } = useParamsHook();
 
   const [products, setProducts] = useState<any[]>([]);
   const [filters, setFilters] = useState<any>({});
   const [loading, setLoading] = useState<boolean>(false);
-  console.log(products);
+  const [searchInput, setSearchInput] = useState<string>(
+    props?.defaultKeyword ?? "",
+  );
+
+  const debounceSearch = useDebounce(searchInput, 1000);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -29,6 +34,7 @@ export default function ListProduct({ props }: { props: ProductModuleProps }) {
     if (filters.categoryId) parameter.append("categoryId", filters.categoryId);
     if (filters.minPrice) parameter.append("price_min", filters.minPrice);
     if (filters.maxPrice) parameter.append("price_max", filters.maxPrice);
+    if (debounceSearch) parameter.append("title", debounceSearch);
 
     const res = await api.get(`/products?${parameter.toString()}`);
     setProducts(res.data);
@@ -48,6 +54,17 @@ export default function ListProduct({ props }: { props: ProductModuleProps }) {
     });
   }, []);
 
+  useEffect(() => {
+    if (debounceSearch) {
+      setParams("title", debounceSearch);
+      setParams("page", 1);
+      setFilters({ ...filters, page: 1 });
+    } else {
+      removeParams("title");
+      setFilters({ ...filters, page: 1 });
+    }
+  }, [debounceSearch]);
+
   return (
     <div className="p-4 bg-white dark:bg-gray-900 min-h-screen text-black dark:text-white transition-colors duration-300">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 w-full">
@@ -56,12 +73,24 @@ export default function ListProduct({ props }: { props: ProductModuleProps }) {
             setParams("categoryId", e.categoryId ? e.categoryId : 0);
             setParams("minPrice", e.minPrice ? e.minPrice : 0);
             setParams("maxPrice", e.maxPrice ? e.maxPrice : 0);
+            setSearchInput("");
             setParams("page", 1);
             setFilters({ ...e, page: 1 });
           }}
         />
         <div className="col-span-3">
-          <h1 className="text-xl font-bold mb-4">Product List</h1>
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-xl font-bold">Product List</h1>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Search product..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="px-4 py-2 border rounded text-black dark:text-white dark:bg-gray-800"
+              />
+            </div>
+          </div>
           {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-pulse">
               {[...Array(4)].map((_, i) => (

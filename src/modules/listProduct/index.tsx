@@ -16,7 +16,7 @@ export default function ListProduct({ props }: { props: ProductModuleProps }) {
 
   const [products, setProducts] = useState<any[]>([]);
   const [filters, setFilters] = useState<any>({});
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [searchInput, setSearchInput] = useState<string>(
     props?.defaultKeyword ?? "",
   );
@@ -36,9 +36,14 @@ export default function ListProduct({ props }: { props: ProductModuleProps }) {
     if (filters.maxPrice) parameter.append("price_max", filters.maxPrice);
     if (debounceSearch) parameter.append("title", debounceSearch);
 
-    const res = await api.get(`/products?${parameter.toString()}`);
-    setProducts(res.data);
-    setLoading(false);
+    try {
+      const res = await api.get(`/products?${parameter.toString()}`);
+      setProducts(res.data);
+      setLoading(false);
+    } catch (error) {
+      alert(error);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -93,7 +98,7 @@ export default function ListProduct({ props }: { props: ProductModuleProps }) {
           </div>
           {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-pulse">
-              {[...Array(4)].map((_, i) => (
+              {[...Array(12)].map((_, i) => (
                 <div
                   key={i}
                   className="bg-gray-300 dark:bg-gray-700 h-40 rounded w-full"
@@ -104,7 +109,7 @@ export default function ListProduct({ props }: { props: ProductModuleProps }) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full h-full">
               {products.map((prod, index) => (
                 <Link key={index} href={`/product/${prod.id}`}>
-                  <div className="border dark:border-gray-700 rounded p-2 hover:shadow w-full h-full bg-white dark:bg-gray-800 transition-colors">
+                  <div className="border dark:border-gray-700 rounded p-2 hover:shadow w-full h-full bg-white dark:bg-gray-800 transition-colors hover:scale-105">
                     <img
                       src={prod.images[0]}
                       className="w-full h-40 object-cover rounded"
@@ -122,7 +127,7 @@ export default function ListProduct({ props }: { props: ProductModuleProps }) {
                   setParams("page", `${filters.page + 1}`);
                   setFilters({ ...filters, page: filters.page + 1 });
                 }}
-                className="mt-4 px-4 py-2 col-span-2 md:col-span-4 bg-blue-600 hover:bg-blue-700 text-white rounded w-full"
+                className="mt-4 px-4 py-2 col-span-2 md:col-span-4 bg-blue-600 hover:bg-blue-700 text-white rounded w-full cursor-pointer"
               >
                 Load More
               </button>

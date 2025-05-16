@@ -15,8 +15,8 @@ export default function ListProduct() {
   const fetchProducts = async () => {
     setLoading(true);
     const params = new URLSearchParams({
-      offset: ((page - 1) * 10).toString(),
-      limit: "10",
+      offset: ((page - 1) * 12).toString(),
+      limit: "12",
     });
 
     if (filters.categoryId) params.append("categoryId", filters.categoryId);
@@ -40,36 +40,40 @@ export default function ListProduct() {
 
   return (
     <div className="p-4">
-      <ProductFilter onFilterChange={setFilters} />
-      <h1 className="text-xl font-bold mb-4">Product List</h1>
-      {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-pulse">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-gray-300 h-40 rounded w-full"></div>
-          ))}
+      <div className="grid grid-cols-4 gap-4 w-full">
+        <ProductFilter onFilterChange={setFilters} />
+        <div className="col-span-3">
+          <h1 className="text-xl font-bold mb-4">Product List</h1>
+          {loading ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-pulse">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-gray-300 h-40 rounded w-full"></div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full h-full">
+              {products.map((prod) => (
+                <Link key={prod.id} href={`/product/${prod.id}`}>
+                  <div className="border rounded p-2 hover:shadow w-full h-full">
+                    <img
+                      src={prod.images[0]}
+                      className="w-full h-40 object-cover"
+                    />
+                    <p>{prod.title}</p>
+                    <p className="text-sm text-gray-500">${prod.price}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded w-full"
+          >
+            Load More
+          </button>
         </div>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {products.map((prod) => (
-            <Link key={prod.id} href={`/product/${prod.id}`}>
-              <div className="border rounded p-2 hover:shadow">
-                <img
-                  src={prod.images[0]}
-                  className="w-full h-32 object-cover"
-                />
-                <p>{prod.title}</p>
-                <p className="text-sm text-gray-500">${prod.price}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-      <button
-        onClick={() => setPage((p) => p + 1)}
-        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
-      >
-        Load More
-      </button>
+      </div>
     </div>
   );
 }

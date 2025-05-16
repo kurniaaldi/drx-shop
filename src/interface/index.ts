@@ -1,5 +1,5 @@
 export interface BaseServerSideInterface {
-  page?: string;
+  page?: number;
   keyword?: string;
   CategoryId?: string;
   MinPrice?: string;
@@ -8,4 +8,12 @@ export interface BaseServerSideInterface {
 
 export interface PropsServerside {
   searchParams: BaseServerSideInterface;
+}
+
+export interface ProductModuleProps {
+  defaultPage?: number;
+  defaultKeyword?: string;
+  defaultCategoryId?: string;
+  defaultMinPrice?: string;
+  defaultMaxPrice?: string;
 }

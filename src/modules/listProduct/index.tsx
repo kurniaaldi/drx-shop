@@ -7,19 +7,16 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/utils/api";
 import ProductFilter from "@/components/filter";
-import { ProductModuleProps } from "@/app/page";
 import useParamsHook from "@/hooks/useParams";
 import useDebounce from "@/hooks/useDebounce";
 
-export default function ListProduct({ props }: { props: ProductModuleProps }) {
+export default function ListProduct() {
   const { setParams, params, removeParams } = useParamsHook();
 
   const [products, setProducts] = useState<any[]>([]);
   const [filters, setFilters] = useState<any>({});
   const [loading, setLoading] = useState<boolean>(true);
-  const [searchInput, setSearchInput] = useState<string>(
-    props?.defaultKeyword ?? "",
-  );
+  const [searchInput, setSearchInput] = useState<string>(params?.title ?? "");
 
   const debounceSearch = useDebounce(searchInput, 1000);
 
@@ -52,10 +49,10 @@ export default function ListProduct({ props }: { props: ProductModuleProps }) {
 
   useEffect(() => {
     setFilters({
-      page: params?.page || props?.defaultPage,
-      categoryId: params?.categoryId || props?.defaultCategoryId,
-      minPrice: params?.minPrice || props?.defaultMinPrice,
-      maxPrice: params?.maxPrice || props?.defaultMaxPrice,
+      page: params?.page ?? 1,
+      categoryId: params?.categoryId ?? "",
+      minPrice: params?.minPrice ?? "",
+      maxPrice: params?.maxPrice ?? "",
     });
   }, []);
 

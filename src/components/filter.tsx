@@ -27,7 +27,7 @@ export default function ProductFilter({ onFilterChange }: Props) {
 
   return (
     <div className="flex flex-col items-start gap-4 w-full">
-      <div className="border border-gray-400 rounded p-4 space-y-4">
+      <div className="border border-gray-400 rounded p-4 space-y-4 w-full">
         <select
           className="border p-2 rounded w-full"
           onChange={(e) => setCategoryId(Number(e.target.value))}
